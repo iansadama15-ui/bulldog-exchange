@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  db:
+    build: ./db
+    container_name: bulldog-db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: bulldog_exchange
+    ports:
+      - "3306:3306"
+
+  catalog-api:
+    build: ./catalog-api
+    container_name: bulldog-catalog-api
+    restart: always
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+
+  order-api:
+    build: ./order-api
+    container_name: bulldog-order-api
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+
+  frontend:
+    build: ./frontend
+    container_name: bulldog-frontend
+    restart: always
+    ports:
+      - "8082:80"
+
+  proxy:
+    build: ./proxy
+    container_name: bulldog-proxy
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - catalog-api
+      - order-api
