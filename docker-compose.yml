@@ -7,6 +7,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: bulldog_exchange
+    volumes:
+      - db-data:/var/lib/mysql
     ports:
       - "3306:3306"
   catalog-api:
@@ -41,3 +43,6 @@ services:
       - frontend
       - catalog-api
       - order-api
+
+volumes:
+  db-data:
