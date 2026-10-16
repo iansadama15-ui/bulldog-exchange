@@ -1,5 +1,4 @@
 version: '3.8'
-
 services:
   db:
     build: ./db
@@ -10,7 +9,6 @@ services:
       MYSQL_DATABASE: bulldog_exchange
     ports:
       - "3306:3306"
-
   catalog-api:
     build: ./catalog-api
     container_name: bulldog-catalog-api
@@ -19,7 +17,6 @@ services:
       - "5000:5000"
     depends_on:
       - db
-
   order-api:
     build: ./order-api
     container_name: bulldog-order-api
@@ -28,14 +25,12 @@ services:
       - "3000:3000"
     depends_on:
       - db
-
   frontend:
     build: ./frontend
     container_name: bulldog-frontend
     restart: always
     ports:
       - "8082:80"
-
   proxy:
     build: ./proxy
     container_name: bulldog-proxy
