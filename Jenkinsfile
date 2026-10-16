@@ -1,4 +1,3 @@
-
 pipeline {
     agent any
 
@@ -6,8 +5,22 @@ pipeline {
         booleanParam(
             name: 'RUN_DEPLOY',
             defaultValue: false,
-            description: 'Enable deployment and smoke tests only when the environment is safe.'
+            description: 'Deploy after successful tests and build'
         )
+        booleanParam(
+            name: 'ROLLBACK',
+            defaultValue: false,
+            description: 'Redeploy a previously built image version'
+        )
+        string(
+            name: 'ROLLBACK_TAG',
+            defaultValue: 'baseline',
+            description: 'Existing image tag to restore'
+        )
+    }
+
+    environment {
+        COMPOSE_PROJECT_NAME = 'bulldog-exchange-cicd'
     }
 
     stages {
@@ -18,6 +31,9 @@ pipeline {
         }
 
         stage('Test') {
+            when {
+                expression { !params.ROLLBACK }
+            }
             steps {
                 sh 'docker build --target test -t bulldog-catalog-test ./catalog-api'
                 sh 'docker build --target test -t bulldog-order-test ./order-api'
@@ -25,23 +41,41 @@ pipeline {
         }
 
         stage('Build Images') {
+            when {
+                expression { !params.ROLLBACK }
+            }
             steps {
-                sh 'docker compose build'
+                sh '''
+                    export IMAGE_TAG=build-${BUILD_NUMBER}
+                    docker compose build
+                '''
             }
         }
 
         stage('Deploy') {
             when {
-                expression { params.RUN_DEPLOY == true }
+                expression { params.RUN_DEPLOY || params.ROLLBACK }
             }
             steps {
-                sh 'docker compose up -d --remove-orphans'
+                script {
+                    def selectedTag = params.ROLLBACK
+                        ? params.ROLLBACK_TAG.trim()
+                        : "build-${env.BUILD_NUMBER}"
+
+                    if (!(selectedTag ==~ /^[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$/)) {
+                        error('Invalid image tag')
+                    }
+
+                    withEnv(["IMAGE_TAG=${selectedTag}"]) {
+                        sh 'docker compose up -d --no-build --remove-orphans'
+                    }
+                }
             }
         }
 
         stage('Smoke Test') {
             when {
-                expression { params.RUN_DEPLOY == true }
+                expression { params.RUN_DEPLOY || params.ROLLBACK }
             }
             steps {
                 sh '''
@@ -73,3 +107,4 @@ pipeline {
         }
     }
 }
+localhost
