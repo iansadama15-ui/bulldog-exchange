@@ -1,3 +1,4 @@
+
 pipeline {
     agent any
 
@@ -7,11 +8,13 @@ pipeline {
             defaultValue: false,
             description: 'Deploy after successful tests and build'
         )
+
         booleanParam(
             name: 'ROLLBACK',
             defaultValue: false,
             description: 'Redeploy a previously built image version'
         )
+
         string(
             name: 'ROLLBACK_TAG',
             defaultValue: 'baseline',
@@ -85,10 +88,12 @@ pipeline {
                         if docker compose exec -T catalog-api wget -qO- http://localhost:5000/health; then
                             break
                         fi
+
                         if [ "$i" -eq 12 ]; then
                             echo "Catalog API health check failed"
                             exit 1
                         fi
+
                         sleep 5
                     done
 
@@ -96,10 +101,12 @@ pipeline {
                         if docker compose exec -T order-api wget -qO- http://localhost:3000/health; then
                             break
                         fi
+
                         if [ "$i" -eq 12 ]; then
                             echo "Order API health check failed"
                             exit 1
                         fi
+
                         sleep 5
                     done
                 '''
@@ -107,4 +114,3 @@ pipeline {
         }
     }
 }
-localhost
