@@ -9,22 +9,26 @@ services:
       - mysql_data:/var/lib/mysql
 
   catalog-api:
+    image: bulldog-catalog:${IMAGE_TAG:-latest}
     build: ./catalog-api
     restart: always
     depends_on:
       - db
 
   order-api:
+    image: bulldog-order:${IMAGE_TAG:-latest}
     build: ./order-api
     restart: always
     depends_on:
       - db
 
   frontend:
+    image: bulldog-frontend:${IMAGE_TAG:-latest}
     build: ./frontend
     restart: always
 
   proxy:
+    image: bulldog-proxy:${IMAGE_TAG:-latest}
     build: ./proxy
     restart: always
     ports:
