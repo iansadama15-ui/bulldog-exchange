@@ -21,3 +21,5 @@ assert.strictEqual(catalog[1].price, 100);
 assert.ok(catalog.every(item => item.price > 0));
 
 console.log('Pass: Catalog API tests passed successfully!');
+
+process.exit(1);
