@@ -2,6 +2,14 @@
 pipeline {
     agent any
 
+    parameters {
+        booleanParam(
+            name: 'RUN_DEPLOY',
+            defaultValue: false,
+            description: 'Enable deployment and smoke tests only when the environment is safe.'
+        )
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -23,12 +31,18 @@ pipeline {
         }
 
         stage('Deploy') {
+            when {
+                expression { params.RUN_DEPLOY == true }
+            }
             steps {
                 sh 'docker compose up -d --remove-orphans'
             }
         }
 
         stage('Smoke Test') {
+            when {
+                expression { params.RUN_DEPLOY == true }
+            }
             steps {
                 sh '''
                     set -e
